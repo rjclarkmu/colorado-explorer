@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+
+  <title>Colorado Explorer</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- START SCREEN -->
+  <div id="start-screen">
+
+    <h1>Colorado Explorer</h1>
+
+    <h2>Can you figure out where you are?</h2>
+
+    <p>
+      Explore five different places in Colorado.
+      Use clues from the landscape to identify the region
+      and place your best guess on the map.
+    </p>
+
+    <p>
+      You can earn up to <strong>600 points per round</strong>.
+    </p>
+
+    <button id="start-button" onclick="startGame()">
+      Start Exploring
+    </button>
+
+  </div>
+
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" style="display: none;">
+
+    <h1>Colorado Explorer</h1>
+
+    <div id="game-status">
+
+      <h2 id="round-title">
+        Round 1
+      </h2>
+
+      <div id="score-display">
+        Score:
+        <span id="score-number">0</span>
+      </div>
+
+    </div>
+
+
+    <!-- STREET VIEW STAYS VISIBLE FOR THE WHOLE ROUND -->
+
+    <h2>Explore the Location</h2>
+
+    <p>
+      Drag the image to look around carefully.
+      Look for clues in the landscape.
+    </p>
+
+    <div id="street-view"></div>
+
+
+    <!-- STAGE 1: EXPLORE -->
+
+    <div id="explore-stage" class="stage">
+
+      <button
+        id="observe-button"
+        onclick="goToObserveStage()">
+
+        I've Explored — Continue
+
+      </button>
+
+    </div>
+
+
+    <!-- STAGE 2: NOTICE + REASON -->
+
+    <div
+      id="observe-stage"
+      class="stage"
+      style="display: none;">
+
+      <div id="question-box">
+
+        <h2>🔎 What do you notice?</h2>
+
+        <p>
+          Select all the clues you noticed in the landscape.
+        </p>
+
+
+        <div class="clue-buttons">
+
+          <button onclick="toggleClue(this, 'Rocks')">
+            🪨 Rocks
+          </button>
+
+          <button onclick="toggleClue(this, 'Grass')">
+            🌾 Grass
+          </button>
+
+          <button onclick="toggleClue(this, 'Trees')">
+            🌲 Trees
+          </button>
+
+          <button onclick="toggleClue(this, 'Little Vegetation')">
+            🍂 Very Little Vegetation
+          </button>
+
+          <button onclick="toggleClue(this, 'Water')">
+            💧 Water
+          </button>
+
+          <button onclick="toggleClue(this, 'Sand')">
+            🏜️ Sand
+          </button>
+
+          <button onclick="toggleClue(this, 'Mountains')">
+            🏔️ Mountains
+          </button>
+
+          <button onclick="toggleClue(this, 'Flat Land')">
+            🌾 Flat Land
+          </button>
+
+          <button onclick="toggleClue(this, 'Hills')">
+            ⛰️ Hills
+          </button>
+
+          <button onclick="toggleClue(this, 'Cliffs')">
+            🪨 Cliffs / Canyons
+          </button>
+        
+            <button onclick="toggleClue(this, 'Man-Made Structure')">
+  🏠 Man-Made Structure
+</button>
+
+        </div>
+
+
+        <h2>
+          Which Colorado region do you think this is?
+        </h2>
+
+
+        <div class="answers">
+
+          <button
+            onclick="selectAnswer(this, 'Eastern Plains')">
+
+            Eastern Plains
+
+          </button>
+
+          <button
+            onclick="selectAnswer(this, 'Front Range')">
+
+            Front Range
+
+          </button>
+
+          <button
+            onclick="selectAnswer(this, 'Mountains')">
+
+            Mountains
+
+          </button>
+
+          <button
+            onclick="selectAnswer(this, 'San Luis Valley')">
+
+            San Luis Valley
+
+          </button>
+
+          <button
+            onclick="selectAnswer(this, 'Western Slope')">
+
+            Western Slope
+
+          </button>
+
+        </div>
+
+
+        <h2>Explain your thinking</h2>
+
+<p>
+  What clues helped you choose that region?
+</p>
+
+<p class="sentence-starter">
+  <strong>Sentence starter:</strong>
+  I think this is the ______ region because...
+</p>
+
+<textarea
+  id="reasoning-box"
+  rows="5">
+</textarea>
+
+
+        <div id="observe-warning"></div>
+
+
+        <button
+          id="map-stage-button"
+          onclick="goToMapStage()">
+
+          Continue to Map
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- STAGE 3: MAP GUESS -->
+
+    <div
+      id="map-stage"
+      class="stage"
+      style="display: none;">
+
+      <div id="question-box">
+
+        <h2>📍 Where do you think you are?</h2>
+
+        <p>
+          Use the Street View above and click your best guess
+          on the Colorado map.
+        </p>
+
+
+        <div id="guess-map"></div>
+
+
+        <button
+          id="submit-button"
+          onclick="checkAnswer()">
+
+          Submit My Guess
+
+        </button>
+
+
+        <div id="feedback"></div>
+
+<button
+  id="next-button"
+  onclick="nextRound()"
+  style="display: none;">
+  Next Round
+</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- JAVASCRIPT FILES -->
+
+  <script src="locations.js"></script>
+
+  <script src="game.js"></script>
+
+
+  <!-- GOOGLE MAPS -->
+
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbsfrwxVN_FISsQl5ArEW0cZzmdU-vsRc&callback=initStreetView"
+    async
+    defer>
+  </script>
+
+</body>
+
+</html>
