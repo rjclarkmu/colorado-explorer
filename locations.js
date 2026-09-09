@@ -1,15 +1,15 @@
 const locations = [
   {
-    name: "Lookout Mountain",
+    name: "City Park, Denver",
     region: "Front Range",
-    pano: "PCgQrraxmIqM7gf4XdsqOQ",
-    heading: 70,
-    pitch: 18,
+    pano: "N0RFS8x6ebyfH-V8QWlG1A",
+    heading: 9,
+    pitch: -3,
     zoom: 1,
-    lat: 39.7328,
-    lng: -105.2387,
+    lat: 39.74693,
+    lng: -104.9474106,
     explanation:
-      "Lookout Mountain is in the Front Range because it sits along the eastern edge of Colorado's Rocky Mountains, where the mountains rise sharply above the plains."
+      "Denver is in the Front Range, where cities and communities developed along the eastern edge of the Rocky Mountains. Here, you can see both a large urban environment and mountains to the west."
   },
 
   {
