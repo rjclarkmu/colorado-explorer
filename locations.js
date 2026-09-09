@@ -29,9 +29,9 @@ const locations = [
     name: "Great Sand Dunes",
     region: "San Luis Valley",
     pano: "TM0ZGx1a6O_VeQL4oV-vXg",
-    heading: 137,
-    pitch: 2,
-    zoom: 1,
+    heading: 304.95,
+    pitch: -0.91,
+    zoom: 1.25,
     lat: 37.745206,
     lng: -105.5143651,
     explanation:
