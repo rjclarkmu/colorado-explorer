@@ -308,3 +308,31 @@ h1 {
   font-weight: bold;
   margin-top: 5px;
 }
+
+#hint-section {
+  margin: 20px auto 10px;
+}
+
+#hint-button {
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  background: #f5a623;
+  color: #222;
+  cursor: pointer;
+}
+
+#hint-button:hover {
+  background: #e69914;
+}
+
+#hint-text {
+  margin: 15px auto;
+  max-width: 700px;
+  padding: 15px;
+  font-size: 18px;
+  background: #fff7d6;
+  border-radius: 10px;
+}
