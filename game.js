@@ -56,6 +56,18 @@ function selectGameMode(button, mode) {
   button.classList.add("mode-selected");
 }
 
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    const temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+
+  return array;
+}
+
 
 function startGame() {
   const warning =
@@ -105,6 +117,28 @@ function startGame() {
   studentResponses = [];
 
   document.getElementById("score-number").innerHTML = "0";
+
+  if (gameMode === "explore") {
+  gameLocations = shuffleArray(gameLocations);
+}
+
+if (gameMode === "post") {
+  const regularPostLocations =
+    gameLocations.filter(function(location) {
+      return location.bonus !== true;
+    });
+
+  const bonusLocation =
+    gameLocations.find(function(location) {
+      return location.bonus === true;
+    });
+
+  gameLocations = shuffleArray(regularPostLocations);
+
+  if (bonusLocation) {
+    gameLocations.push(bonusLocation);
+  }
+}
 
   // Hints only appear in Explore mode
   if (gameMode === "explore") {
