@@ -13,7 +13,10 @@ let guessedLocation = null;
 
 let currentRound = 0;
 let totalScore = 0;
-
+let studentName = "";
+let studentClass = "";
+let gameMode = "";
+let studentResponses = [];
 
 function initStreetView() {
   // Game waits for the student to click Start.
