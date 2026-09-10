@@ -21,13 +21,56 @@ let studentResponses = [];
 function initStreetView() {
   // Game waits for the student to click Start.
 }
+function selectGameMode(button, mode) {
+  gameMode = mode;
 
+  const modeButtons =
+    document.querySelectorAll(".mode-buttons button");
+
+  modeButtons.forEach(function(btn) {
+    btn.classList.remove("mode-selected");
+  });
+
+  button.classList.add("mode-selected");
+}
 
 function startGame() {
+  const warning =
+    document.getElementById("start-warning");
+
+  studentName =
+    document.getElementById("student-name").value.trim();
+
+  studentClass =
+    document.getElementById("student-class").value;
+
+  if (studentName === "") {
+    warning.innerHTML =
+      "Please enter your name.";
+    return;
+  }
+
+  if (studentClass === "") {
+    warning.innerHTML =
+      "Please choose your class.";
+    return;
+  }
+
+  if (gameMode === "") {
+    warning.innerHTML =
+      "Please choose Explore Colorado or Colorado Post-Test.";
+    return;
+  }
+
+  warning.innerHTML = "";
+
   gameStarted = true;
 
-  document.getElementById("start-screen").style.display = "none";
-  document.getElementById("game-screen").style.display = "block";
+  document.getElementById("start-screen").style.display =
+    "none";
+
+  document.getElementById("game-screen").style.display =
+    "block";
 
   loadRound();
   initGuessMap();
