@@ -21,7 +21,8 @@ let totalScore = 0;
 let bonusScore = 0;
 
 let gameLocations = [];
-
+let hintUsed = false;
+let hintPenalty = 0;
 
 // --------------------------------------------------
 // GOOGLE MAPS CALLBACK
@@ -270,7 +271,30 @@ function toggleClue(button, clue) {
     button.classList.add("clue-selected");
   }
 }
+// --------------------------------------------------
+// HINTS
+// --------------------------------------------------
 
+function showHint() {
+  const currentLocation = gameLocations[currentRound];
+
+  if (gameMode !== "explore") {
+    return;
+  }
+
+  if (hintUsed === true) {
+    return;
+  }
+
+  hintUsed = true;
+  hintPenalty = 100;
+
+  document.getElementById("hint-text").innerHTML =
+    "💡 " + currentLocation.hint;
+
+  document.getElementById("hint-button").style.display =
+    "none";
+}
 
 // --------------------------------------------------
 // REGION BUTTONS
@@ -411,9 +435,11 @@ function checkAnswer() {
     );
 
     roundScore =
-      regionPoints + mapPoints;
+  regionPoints + mapPoints - hintPenalty;
 
-    totalScore += roundScore;
+roundScore = Math.max(0, roundScore);
+
+totalScore += roundScore;
   }
 
 
@@ -434,6 +460,8 @@ function checkAnswer() {
     regionPoints: regionPoints,
     mapPoints: mapPoints,
     roundScore: roundScore
+    hintUsed: hintUsed,
+hintPenalty: hintPenalty,
   });
 
 
@@ -547,63 +575,68 @@ function checkAnswer() {
 
 
   // Score
+message +=
+  "<div class='reveal-section score-summary'>";
+
+if (currentLocation.bonus === true) {
   message +=
-    "<div class='reveal-section score-summary'>";
-
-  if (currentLocation.bonus === true) {
-    message +=
-      "<h3>⭐ Bonus Score: " +
-      roundScore +
-      " / " +
-      maxRoundScore +
-      "</h3>";
-
-    message +=
-      "<p>Region: " +
-      regionPoints +
-      " / 200 &nbsp; | &nbsp; Map: " +
-      mapPoints +
-      " / 100</p>";
-  } else {
-    message +=
-      "<h3>Round Score: " +
-      roundScore +
-      " / " +
-      maxRoundScore +
-      "</h3>";
-
-    message +=
-      "<p>Region: " +
-      regionPoints +
-      " / 400 &nbsp; | &nbsp; Map: " +
-      mapPoints +
-      " / 200</p>";
-  }
+    "<h3>⭐ Bonus Score: " +
+    roundScore +
+    " / " +
+    maxRoundScore +
+    "</h3>";
 
   message +=
-    "<p>You were <strong>" +
-    Math.round(distance) +
-    " miles away</strong>.</p>";
-
-  if (currentLocation.bonus === true) {
-    message +=
-      "<p>Main Score: <strong>" +
-      totalScore +
-      "</strong></p>";
-
-    message +=
-      "<p>Bonus Points: <strong>+" +
-      bonusScore +
-      "</strong></p>";
-  } else {
-    message +=
-      "<p>Running Score: <strong>" +
-      totalScore +
-      "</strong></p>";
-  }
+    "<p>Region: " +
+    regionPoints +
+    " / 200 &nbsp; | &nbsp; Map: " +
+    mapPoints +
+    " / 100</p>";
+} else {
+  message +=
+    "<h3>Round Score: " +
+    roundScore +
+    " / " +
+    maxRoundScore +
+    "</h3>";
 
   message +=
-    "</div>";
+    "<p>Region: " +
+    regionPoints +
+    " / 400 &nbsp; | &nbsp; Map: " +
+    mapPoints +
+    " / 200</p>";
+}
+
+message +=
+  "<p>You were <strong>" +
+  Math.round(distance) +
+  " miles away</strong>.</p>";
+
+if (hintUsed === true) {
+  message +=
+    "<p>Hint used: <strong>-100 points</strong></p>";
+}
+
+if (currentLocation.bonus === true) {
+  message +=
+    "<p>Main Score: <strong>" +
+    totalScore +
+    "</strong></p>";
+
+  message +=
+    "<p>Bonus Points: <strong>+" +
+    bonusScore +
+    "</strong></p>";
+} else {
+  message +=
+    "<p>Running Score: <strong>" +
+    totalScore +
+    "</strong></p>";
+}
+
+message +=
+  "</div>";
 
 
   feedback.innerHTML =
