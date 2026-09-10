@@ -1,5 +1,10 @@
 let gameStarted = false;
 
+let studentName = "";
+let studentClass = "";
+let gameMode = "";
+let studentResponses = [];
+
 let selectedAnswer = "";
 let selectedClues = [];
 
@@ -13,15 +18,24 @@ let guessedLocation = null;
 
 let currentRound = 0;
 let totalScore = 0;
-let studentName = "";
-let studentClass = "";
-let gameMode = "";
-let studentResponses = [];
+let bonusScore = 0;
+
 let gameLocations = [];
 
+
+// --------------------------------------------------
+// GOOGLE MAPS CALLBACK
+// --------------------------------------------------
+
 function initStreetView() {
-  // Game waits for the student to click Start.
+  // The game waits for the student to click Start.
 }
+
+
+// --------------------------------------------------
+// START SCREEN
+// --------------------------------------------------
+
 function selectGameMode(button, mode) {
   gameMode = mode;
 
@@ -34,6 +48,7 @@ function selectGameMode(button, mode) {
 
   button.classList.add("mode-selected");
 }
+
 
 function startGame() {
   const warning =
@@ -79,8 +94,11 @@ function startGame() {
 
   currentRound = 0;
   totalScore = 0;
+  bonusScore = 0;
+  studentResponses = [];
 
-  document.getElementById("score-number").innerHTML = "0";
+  document.getElementById("score-number").innerHTML =
+    "0";
 
   gameStarted = true;
 
@@ -95,14 +113,29 @@ function startGame() {
 }
 
 
-function loadRound() {
-  const currentLocation = gameLocations[currentRound];
+// --------------------------------------------------
+// LOAD ROUND
+// --------------------------------------------------
 
-  document.getElementById("round-title").innerHTML =
-    "Round " +
-    (currentRound + 1) +
-    " of " +
-    gameLocations.length
+function loadRound() {
+  const currentLocation =
+    gameLocations[currentRound];
+
+  if (currentLocation.bonus === true) {
+    document.getElementById("round-title").innerHTML =
+      "⭐ BONUS ROUND ⭐";
+  } else {
+    const regularLocations =
+      gameLocations.filter(function(location) {
+        return location.bonus !== true;
+      });
+
+    document.getElementById("round-title").innerHTML =
+      "Round " +
+      (currentRound + 1) +
+      " of " +
+      regularLocations.length;
+  }
 
   panorama = new google.maps.StreetViewPanorama(
     document.getElementById("street-view"),
@@ -126,6 +159,10 @@ function loadRound() {
   );
 }
 
+
+// --------------------------------------------------
+// GUESS MAP
+// --------------------------------------------------
 
 function initGuessMap() {
   guessMap = new google.maps.Map(
@@ -175,29 +212,39 @@ function initGuessMap() {
     }
   );
 
-  guessMap.addListener("click", function(event) {
-    guessedLocation = {
-      lat: event.latLng.lat(),
-      lng: event.latLng.lng()
-    };
+  guessMap.addListener(
+    "click",
+    function(event) {
+      guessedLocation = {
+        lat: event.latLng.lat(),
+        lng: event.latLng.lng()
+      };
 
-    if (guessMarker) {
-      guessMarker.setMap(null);
+      if (guessMarker) {
+        guessMarker.setMap(null);
+      }
+
+      guessMarker = new google.maps.Marker({
+        position: guessedLocation,
+        map: guessMap,
+        label: "G",
+        title: "Your Guess"
+      });
     }
-
-    guessMarker = new google.maps.Marker({
-      position: guessedLocation,
-      map: guessMap,
-      label: "G",
-      title: "Your Guess"
-    });
-  });
+  );
 }
 
 
+// --------------------------------------------------
+// STAGE 1 → STAGE 2
+// --------------------------------------------------
+
 function goToObserveStage() {
-  document.getElementById("explore-stage").style.display = "none";
-  document.getElementById("observe-stage").style.display = "block";
+  document.getElementById("explore-stage").style.display =
+    "none";
+
+  document.getElementById("observe-stage").style.display =
+    "block";
 
   window.scrollTo({
     top: 0,
@@ -206,11 +253,16 @@ function goToObserveStage() {
 }
 
 
+// --------------------------------------------------
+// CLUE BUTTONS
+// --------------------------------------------------
+
 function toggleClue(button, clue) {
   if (selectedClues.includes(clue)) {
-    selectedClues = selectedClues.filter(function(item) {
-      return item !== clue;
-    });
+    selectedClues =
+      selectedClues.filter(function(item) {
+        return item !== clue;
+      });
 
     button.classList.remove("clue-selected");
   } else {
@@ -219,6 +271,10 @@ function toggleClue(button, clue) {
   }
 }
 
+
+// --------------------------------------------------
+// REGION BUTTONS
+// --------------------------------------------------
 
 function selectAnswer(button, answer) {
   selectedAnswer = answer;
@@ -234,12 +290,18 @@ function selectAnswer(button, answer) {
 }
 
 
+// --------------------------------------------------
+// STAGE 2 → STAGE 3
+// --------------------------------------------------
+
 function goToMapStage() {
   const warning =
     document.getElementById("observe-warning");
 
   const reasoning =
-    document.getElementById("reasoning-box").value.trim();
+    document.getElementById("reasoning-box")
+      .value
+      .trim();
 
   if (selectedClues.length === 0) {
     warning.innerHTML =
@@ -261,8 +323,11 @@ function goToMapStage() {
 
   warning.innerHTML = "";
 
-  document.getElementById("observe-stage").style.display = "none";
-  document.getElementById("map-stage").style.display = "block";
+  document.getElementById("observe-stage").style.display =
+    "none";
+
+  document.getElementById("map-stage").style.display =
+    "block";
 
   window.scrollTo({
     top: 0,
@@ -271,14 +336,21 @@ function goToMapStage() {
 }
 
 
+// --------------------------------------------------
+// SUBMIT ROUND
+// --------------------------------------------------
+
 function checkAnswer() {
-  const currentLocation = gameLocations[currentRound];
+  const currentLocation =
+    gameLocations[currentRound];
 
   const feedback =
     document.getElementById("feedback");
 
   const reasoning =
-    document.getElementById("reasoning-box").value.trim();
+    document.getElementById("reasoning-box")
+      .value
+      .trim();
 
   if (selectedAnswer === "") {
     feedback.innerHTML =
@@ -308,24 +380,77 @@ function checkAnswer() {
   );
 
   let regionPoints = 0;
+  let mapPoints = 0;
+  let roundScore = 0;
+  let maxRoundScore = 600;
 
-  if (regionCorrect) {
-    regionPoints = 400;
+  if (currentLocation.bonus === true) {
+    maxRoundScore = 300;
+
+    if (regionCorrect) {
+      regionPoints = 200;
+    }
+
+    mapPoints = Math.max(
+      0,
+      Math.round(100 - distance)
+    );
+
+    roundScore =
+      regionPoints + mapPoints;
+
+    bonusScore += roundScore;
+  } else {
+    if (regionCorrect) {
+      regionPoints = 400;
+    }
+
+    mapPoints = Math.max(
+      0,
+      Math.round(200 - distance * 2)
+    );
+
+    roundScore =
+      regionPoints + mapPoints;
+
+    totalScore += roundScore;
   }
 
-  let mapPoints = Math.max(
-    0,
-    Math.round(200 - distance * 2)
-  );
 
-  let roundScore =
-    regionPoints + mapPoints;
+  // Save this response for later use
+  studentResponses.push({
+    student: studentName,
+    className: studentClass,
+    mode: gameMode,
+    round: currentRound + 1,
+    location: currentLocation.name,
+    correctRegion: currentLocation.region,
+    regionGuess: selectedAnswer,
+    regionCorrect: regionCorrect,
+    clues: selectedClues.join(", "),
+    reasoning: reasoning,
+    distanceMiles: Math.round(distance),
+    bonus: currentLocation.bonus === true,
+    regionPoints: regionPoints,
+    mapPoints: mapPoints,
+    roundScore: roundScore
+  });
 
-  totalScore += roundScore;
 
-  document.getElementById("score-number").innerHTML =
-    totalScore;
+  // Update live score
+  if (currentLocation.bonus === true) {
+    document.getElementById("score-number").innerHTML =
+      totalScore +
+      " + " +
+      bonusScore +
+      " bonus";
+  } else {
+    document.getElementById("score-number").innerHTML =
+      totalScore;
+  }
 
+
+  // Clear any old reveal marker / line
   if (actualMarker) {
     actualMarker.setMap(null);
   }
@@ -334,6 +459,8 @@ function checkAnswer() {
     guessLine.setMap(null);
   }
 
+
+  // Actual location marker
   actualMarker = new google.maps.Marker({
     position: actualLocation,
     map: guessMap,
@@ -341,6 +468,8 @@ function checkAnswer() {
     title: "Actual Location"
   });
 
+
+  // Line from guess to actual
   guessLine = new google.maps.Polyline({
     path: [
       guessedLocation,
@@ -354,10 +483,16 @@ function checkAnswer() {
   });
 
 
+  // --------------------------------------------------
+  // BUILD REVEAL
+  // --------------------------------------------------
+
   let message = "";
 
-  // ANSWER
-  message += "<div class='reveal-section'>";
+
+  // Answer
+  message +=
+    "<div class='reveal-section'>";
 
   if (regionCorrect) {
     message +=
@@ -374,10 +509,11 @@ function checkAnswer() {
     currentLocation.name +
     "</strong>.</p>";
 
-  message += "</div>";
+  message +=
+    "</div>";
 
 
-  // STUDENT THINKING
+  // Student thinking
   message +=
     "<div class='reveal-section student-thinking'>";
 
@@ -390,51 +526,89 @@ function checkAnswer() {
     "<strong>Your reasoning:</strong><br>" +
     reasoning;
 
-  message += "</div>";
+  message +=
+    "</div>";
 
 
-  // WHY THIS REGION
+  // Why this region
   message +=
     "<div class='reveal-section'>";
 
   message +=
-    "<h3>Why this region?</h3>" +
+    "<h3>Why this region?</h3>";
+
+  message +=
     "<p>" +
     currentLocation.explanation +
     "</p>";
 
-  message += "</div>";
+  message +=
+    "</div>";
 
 
-  // SCORE
+  // Score
   message +=
     "<div class='reveal-section score-summary'>";
 
-  message +=
-    "<h3>Round Score: " +
-    roundScore +
-    " / 600</h3>";
+  if (currentLocation.bonus === true) {
+    message +=
+      "<h3>⭐ Bonus Score: " +
+      roundScore +
+      " / " +
+      maxRoundScore +
+      "</h3>";
 
-  message +=
-    "<p>Region: " +
-    regionPoints +
-    " / 400 &nbsp; | &nbsp; Map: " +
-    mapPoints +
-    " / 200</p>";
+    message +=
+      "<p>Region: " +
+      regionPoints +
+      " / 200 &nbsp; | &nbsp; Map: " +
+      mapPoints +
+      " / 100</p>";
+  } else {
+    message +=
+      "<h3>Round Score: " +
+      roundScore +
+      " / " +
+      maxRoundScore +
+      "</h3>";
+
+    message +=
+      "<p>Region: " +
+      regionPoints +
+      " / 400 &nbsp; | &nbsp; Map: " +
+      mapPoints +
+      " / 200</p>";
+  }
 
   message +=
     "<p>You were <strong>" +
     Math.round(distance) +
     " miles away</strong>.</p>";
 
+  if (currentLocation.bonus === true) {
+    message +=
+      "<p>Main Score: <strong>" +
+      totalScore +
+      "</strong></p>";
+
+    message +=
+      "<p>Bonus Points: <strong>+" +
+      bonusScore +
+      "</strong></p>";
+  } else {
+    message +=
+      "<p>Running Score: <strong>" +
+      totalScore +
+      "</strong></p>";
+  }
+
   message +=
-    "<p>Running Score: <strong>" +
-    totalScore +
-    "</strong></p>";
+    "</div>";
 
-  message += "</div>";
 
-  feedback.innerHTML = message;
+  feedback.innerHTML =
+    message;
+
 
   document.getElementById("submit-button").style.display =
     "none";
@@ -443,6 +617,10 @@ function checkAnswer() {
     "inline-block";
 }
 
+
+// --------------------------------------------------
+// NEXT ROUND
+// --------------------------------------------------
 
 function nextRound() {
   currentRound++;
@@ -462,14 +640,23 @@ function nextRound() {
 }
 
 
+// --------------------------------------------------
+// RESET BETWEEN ROUNDS
+// --------------------------------------------------
+
 function resetRound() {
   selectedAnswer = "";
   selectedClues = [];
   guessedLocation = null;
 
-  document.getElementById("feedback").innerHTML = "";
-  document.getElementById("observe-warning").innerHTML = "";
-  document.getElementById("reasoning-box").value = "";
+  document.getElementById("feedback").innerHTML =
+    "";
+
+  document.getElementById("observe-warning").innerHTML =
+    "";
+
+  document.getElementById("reasoning-box").value =
+    "";
 
   const answerButtons =
     document.querySelectorAll(".answers button");
@@ -517,6 +704,10 @@ function resetRound() {
 }
 
 
+// --------------------------------------------------
+// END GAME
+// --------------------------------------------------
+
 function endGame() {
   document.getElementById("round-title").innerHTML =
     "Explorer Complete!";
@@ -533,27 +724,54 @@ function endGame() {
   document.getElementById("map-stage").style.display =
     "none";
 
-  const maxScore =
-  gameLocations.length * 600;
 
-  const finalMessage =
+  const regularLocations =
+    gameLocations.filter(function(location) {
+      return location.bonus !== true;
+    });
+
+  const maxScore =
+    regularLocations.length * 600;
+
+
+  let finalMessage =
     "<div class='reveal-section'>" +
-    "<h2>Great job!</h2>" +
-    "<p>You explored all " +
-    gameLocations.length +
+
+    "<h2>Great job, " +
+    studentName +
+    "!</h2>" +
+
+    "<p>You explored " +
+    regularLocations.length +
     " Colorado locations.</p>" +
+
     "<h2>Final Score</h2>" +
+
     "<p><strong>" +
     totalScore +
     " / " +
     maxScore +
-    "</strong></p>" +
+    "</strong></p>";
+
+
+  if (bonusScore > 0) {
+    finalMessage +=
+      "<h3>⭐ Bonus Points: +" +
+      bonusScore +
+      "</h3>";
+  }
+
+
+  finalMessage +=
     "</div>";
 
-  document.getElementById("game-screen").insertAdjacentHTML(
-    "beforeend",
-    finalMessage
-  );
+
+  document.getElementById("game-screen")
+    .insertAdjacentHTML(
+      "beforeend",
+      finalMessage
+    );
+
 
   window.scrollTo({
     top: 0,
@@ -562,8 +780,18 @@ function endGame() {
 }
 
 
-function calculateDistance(lat1, lng1, lat2, lng2) {
-  const earthRadius = 3958.8;
+// --------------------------------------------------
+// DISTANCE CALCULATION
+// --------------------------------------------------
+
+function calculateDistance(
+  lat1,
+  lng1,
+  lat2,
+  lng2
+) {
+  const earthRadius =
+    3958.8;
 
   const latDifference =
     degreesToRadians(lat2 - lat1);
@@ -574,9 +802,16 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
   const a =
     Math.sin(latDifference / 2) *
       Math.sin(latDifference / 2) +
-    Math.cos(degreesToRadians(lat1)) *
-      Math.cos(degreesToRadians(lat2)) *
-      Math.sin(lngDifference / 2) *
+
+    Math.cos(
+      degreesToRadians(lat1)
+    ) *
+
+    Math.cos(
+      degreesToRadians(lat2)
+    ) *
+
+    Math.sin(lngDifference / 2) *
       Math.sin(lngDifference / 2);
 
   const c =
