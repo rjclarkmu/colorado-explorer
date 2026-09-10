@@ -108,7 +108,13 @@ function startGame() {
 
   document.getElementById("game-screen").style.display =
     "block";
-
+  if (gameMode === "post") {
+  document.getElementById("hint-section").style.display =
+    "none";
+} else {
+  document.getElementById("hint-section").style.display =
+    "block";
+}
   loadRound();
   initGuessMap();
 }
@@ -734,6 +740,14 @@ function resetRound() {
 
   document.getElementById("next-button").style.display =
     "none";
+
+  hintUsed = false;
+hintPenalty = 0;
+
+document.getElementById("hint-text").innerHTML = "";
+
+document.getElementById("hint-button").style.display =
+  gameMode === "explore" ? "inline-block" : "none";
 }
 
 
