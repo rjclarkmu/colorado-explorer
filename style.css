@@ -260,3 +260,51 @@ h1 {
 .score-summary h3 {
   font-size: 24px;
 }
+.start-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 600px;
+  margin: 30px auto 0;
+}
+
+.start-form input,
+.start-form select {
+  padding: 14px;
+  font-size: 18px;
+  border: 2px solid #777;
+  border-radius: 10px;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mode-buttons button {
+  width: 260px;
+  padding: 18px;
+  border: 2px solid #2f5d3a;
+  border-radius: 14px;
+  background: white;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.mode-buttons button span {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.mode-buttons button.mode-selected {
+  background: #2f5d3a;
+  color: white;
+}
+
+#start-warning {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 5px;
+}
