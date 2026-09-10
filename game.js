@@ -22,6 +22,9 @@ let bonusScore = 0;
 
 let gameLocations = [];
 
+const RESPONSE_URL =
+  "https://script.google.com/macros/s/AKfycbxBOUQM8EAts51mGZN5FwtwsLuFQnvKsg_5TrjUpTGCwk-eVxdm63iw-vQ0LcOId2444Q/exec";
+
 // Hint system
 let hintUsed = false;
 let hintPenalty = 0;
@@ -460,31 +463,35 @@ function checkAnswer() {
 
 
   // Store response
-  studentResponses.push({
-    student: studentName,
-    className: studentClass,
-    mode: gameMode,
-    round: currentRound + 1,
+const responseData = {
+  student: studentName,
+  className: studentClass,
+  mode: gameMode,
+  round: currentRound + 1,
 
-    location: currentLocation.name,
-    correctRegion: currentLocation.region,
-    regionGuess: selectedAnswer,
-    regionCorrect: regionCorrect,
+  location: currentLocation.name,
+  correctRegion: currentLocation.region,
+  regionGuess: selectedAnswer,
+  regionCorrect: regionCorrect,
 
-    clues: selectedClues.join(", "),
-    reasoning: reasoning,
+  clues: selectedClues.join(", "),
+  reasoning: reasoning,
 
-    distanceMiles: Math.round(distance),
+  distanceMiles: Math.round(distance),
 
-    hintUsed: hintUsed,
-    hintPenalty: hintPenalty,
+  hintUsed: hintUsed,
+  hintPenalty: hintPenalty,
 
-    bonus: currentLocation.bonus === true,
+  bonus: currentLocation.bonus === true,
 
-    regionPoints: regionPoints,
-    mapPoints: mapPoints,
-    roundScore: roundScore
-  });
+  regionPoints: regionPoints,
+  mapPoints: mapPoints,
+  roundScore: roundScore
+};
+
+studentResponses.push(responseData);
+
+sendResponse(responseData);
 
 
   // Live score
@@ -909,4 +916,22 @@ function calculateDistance(
 
 function degreesToRadians(degrees) {
   return degrees * (Math.PI / 180);
+}
+
+// --------------------------------------------------
+// SEND RESPONSE TO GOOGLE SHEET
+// --------------------------------------------------
+
+function sendResponse(responseData) {
+  fetch(RESPONSE_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain"
+    },
+    body: JSON.stringify(responseData)
+  })
+  .catch(function(error) {
+    console.error("Response could not be sent:", error);
+  });
 }
