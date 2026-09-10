@@ -17,6 +17,7 @@ let studentName = "";
 let studentClass = "";
 let gameMode = "";
 let studentResponses = [];
+let gameLocations = [];
 
 function initStreetView() {
   // Game waits for the student to click Start.
@@ -64,6 +65,23 @@ function startGame() {
 
   warning.innerHTML = "";
 
+  if (gameMode === "explore") {
+    gameLocations = locations.filter(function(location) {
+      return location.mode === "explore";
+    });
+  }
+
+  if (gameMode === "post") {
+    gameLocations = locations.filter(function(location) {
+      return location.mode === "post";
+    });
+  }
+
+  currentRound = 0;
+  totalScore = 0;
+
+  document.getElementById("score-number").innerHTML = "0";
+
   gameStarted = true;
 
   document.getElementById("start-screen").style.display =
@@ -78,13 +96,13 @@ function startGame() {
 
 
 function loadRound() {
-  const currentLocation = locations[currentRound];
+  const currentLocation = gameLocations[currentRound];
 
   document.getElementById("round-title").innerHTML =
     "Round " +
     (currentRound + 1) +
     " of " +
-    locations.length;
+    gameLocations.length
 
   panorama = new google.maps.StreetViewPanorama(
     document.getElementById("street-view"),
@@ -254,7 +272,7 @@ function goToMapStage() {
 
 
 function checkAnswer() {
-  const currentLocation = locations[currentRound];
+  const currentLocation = gameLocations[currentRound];
 
   const feedback =
     document.getElementById("feedback");
@@ -429,7 +447,7 @@ function checkAnswer() {
 function nextRound() {
   currentRound++;
 
-  if (currentRound >= locations.length) {
+  if (currentRound >= gameLocations.length) {
     endGame();
     return;
   }
@@ -516,13 +534,13 @@ function endGame() {
     "none";
 
   const maxScore =
-    locations.length * 600;
+  gameLocations.length * 600;
 
   const finalMessage =
     "<div class='reveal-section'>" +
     "<h2>Great job!</h2>" +
     "<p>You explored all " +
-    locations.length +
+    gameLocations.length +
     " Colorado locations.</p>" +
     "<h2>Final Score</h2>" +
     "<p><strong>" +
