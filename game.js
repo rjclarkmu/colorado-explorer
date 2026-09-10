@@ -21,15 +21,18 @@ let totalScore = 0;
 let bonusScore = 0;
 
 let gameLocations = [];
+
+// Hint system
 let hintUsed = false;
 let hintPenalty = 0;
+
 
 // --------------------------------------------------
 // GOOGLE MAPS CALLBACK
 // --------------------------------------------------
 
 function initStreetView() {
-  // The game waits for the student to click Start.
+  // Wait for the student to click Start.
 }
 
 
@@ -98,8 +101,16 @@ function startGame() {
   bonusScore = 0;
   studentResponses = [];
 
-  document.getElementById("score-number").innerHTML =
-    "0";
+  document.getElementById("score-number").innerHTML = "0";
+
+  // Hints only appear in Explore mode
+  if (gameMode === "explore") {
+    document.getElementById("hint-section").style.display =
+      "block";
+  } else {
+    document.getElementById("hint-section").style.display =
+      "none";
+  }
 
   gameStarted = true;
 
@@ -108,13 +119,7 @@ function startGame() {
 
   document.getElementById("game-screen").style.display =
     "block";
-  if (gameMode === "post") {
-  document.getElementById("hint-section").style.display =
-    "none";
-} else {
-  document.getElementById("hint-section").style.display =
-    "block";
-}
+
   loadRound();
   initGuessMap();
 }
@@ -164,6 +169,33 @@ function loadRound() {
       linksControl: true
     }
   );
+}
+
+
+// --------------------------------------------------
+// HINT
+// --------------------------------------------------
+
+function showHint() {
+  if (gameMode !== "explore") {
+    return;
+  }
+
+  if (hintUsed === true) {
+    return;
+  }
+
+  const currentLocation =
+    gameLocations[currentRound];
+
+  hintUsed = true;
+  hintPenalty = 100;
+
+  document.getElementById("hint-text").innerHTML =
+    "💡 " + currentLocation.hint;
+
+  document.getElementById("hint-button").style.display =
+    "none";
 }
 
 
@@ -219,31 +251,28 @@ function initGuessMap() {
     }
   );
 
-  guessMap.addListener(
-    "click",
-    function(event) {
-      guessedLocation = {
-        lat: event.latLng.lat(),
-        lng: event.latLng.lng()
-      };
+  guessMap.addListener("click", function(event) {
+    guessedLocation = {
+      lat: event.latLng.lat(),
+      lng: event.latLng.lng()
+    };
 
-      if (guessMarker) {
-        guessMarker.setMap(null);
-      }
-
-      guessMarker = new google.maps.Marker({
-        position: guessedLocation,
-        map: guessMap,
-        label: "G",
-        title: "Your Guess"
-      });
+    if (guessMarker) {
+      guessMarker.setMap(null);
     }
-  );
+
+    guessMarker = new google.maps.Marker({
+      position: guessedLocation,
+      map: guessMap,
+      label: "G",
+      title: "Your Guess"
+    });
+  });
 }
 
 
 // --------------------------------------------------
-// STAGE 1 → STAGE 2
+// EXPLORE → OBSERVE
 // --------------------------------------------------
 
 function goToObserveStage() {
@@ -266,41 +295,22 @@ function goToObserveStage() {
 
 function toggleClue(button, clue) {
   if (selectedClues.includes(clue)) {
+
     selectedClues =
       selectedClues.filter(function(item) {
         return item !== clue;
       });
 
     button.classList.remove("clue-selected");
+
   } else {
+
     selectedClues.push(clue);
+
     button.classList.add("clue-selected");
   }
 }
-// --------------------------------------------------
-// HINTS
-// --------------------------------------------------
 
-function showHint() {
-  const currentLocation = gameLocations[currentRound];
-
-  if (gameMode !== "explore") {
-    return;
-  }
-
-  if (hintUsed === true) {
-    return;
-  }
-
-  hintUsed = true;
-  hintPenalty = 100;
-
-  document.getElementById("hint-text").innerHTML =
-    "💡 " + currentLocation.hint;
-
-  document.getElementById("hint-button").style.display =
-    "none";
-}
 
 // --------------------------------------------------
 // REGION BUTTONS
@@ -321,7 +331,7 @@ function selectAnswer(button, answer) {
 
 
 // --------------------------------------------------
-// STAGE 2 → STAGE 3
+// OBSERVE → MAP
 // --------------------------------------------------
 
 function goToMapStage() {
@@ -382,12 +392,6 @@ function checkAnswer() {
       .value
       .trim();
 
-  if (selectedAnswer === "") {
-    feedback.innerHTML =
-      "Choose a Colorado region first!";
-    return;
-  }
-
   if (guessedLocation === null) {
     feedback.innerHTML =
       "Click on the map to place your location guess!";
@@ -415,6 +419,7 @@ function checkAnswer() {
   let maxRoundScore = 600;
 
   if (currentLocation.bonus === true) {
+
     maxRoundScore = 300;
 
     if (regionCorrect) {
@@ -430,7 +435,9 @@ function checkAnswer() {
       regionPoints + mapPoints;
 
     bonusScore += roundScore;
+
   } else {
+
     if (regionCorrect) {
       regionPoints = 400;
     }
@@ -441,50 +448,62 @@ function checkAnswer() {
     );
 
     roundScore =
-  regionPoints + mapPoints - hintPenalty;
+      regionPoints +
+      mapPoints -
+      hintPenalty;
 
-roundScore = Math.max(0, roundScore);
+    roundScore =
+      Math.max(0, roundScore);
 
-totalScore += roundScore;
+    totalScore += roundScore;
   }
 
 
-  // Save this response for later use
+  // Store response
   studentResponses.push({
     student: studentName,
     className: studentClass,
     mode: gameMode,
     round: currentRound + 1,
+
     location: currentLocation.name,
     correctRegion: currentLocation.region,
     regionGuess: selectedAnswer,
     regionCorrect: regionCorrect,
+
     clues: selectedClues.join(", "),
     reasoning: reasoning,
+
     distanceMiles: Math.round(distance),
+
+    hintUsed: hintUsed,
+    hintPenalty: hintPenalty,
+
     bonus: currentLocation.bonus === true,
+
     regionPoints: regionPoints,
     mapPoints: mapPoints,
     roundScore: roundScore
-    hintUsed: hintUsed,
-hintPenalty: hintPenalty,
   });
 
 
-  // Update live score
+  // Live score
   if (currentLocation.bonus === true) {
+
     document.getElementById("score-number").innerHTML =
       totalScore +
       " + " +
       bonusScore +
       " bonus";
+
   } else {
+
     document.getElementById("score-number").innerHTML =
       totalScore;
   }
 
 
-  // Clear any old reveal marker / line
+  // Reveal marker and line
   if (actualMarker) {
     actualMarker.setMap(null);
   }
@@ -493,8 +512,6 @@ hintPenalty: hintPenalty,
     guessLine.setMap(null);
   }
 
-
-  // Actual location marker
   actualMarker = new google.maps.Marker({
     position: actualLocation,
     map: guessMap,
@@ -502,8 +519,6 @@ hintPenalty: hintPenalty,
     title: "Actual Location"
   });
 
-
-  // Line from guess to actual
   guessLine = new google.maps.Polyline({
     path: [
       guessedLocation,
@@ -518,20 +533,21 @@ hintPenalty: hintPenalty,
 
 
   // --------------------------------------------------
-  // BUILD REVEAL
+  // REVEAL
   // --------------------------------------------------
 
   let message = "";
 
-
-  // Answer
   message +=
     "<div class='reveal-section'>";
 
   if (regionCorrect) {
+
     message +=
       "<h2>✅ Correct Region!</h2>";
+
   } else {
+
     message +=
       "<h2>❌ Correct Region: " +
       currentLocation.region +
@@ -547,7 +563,6 @@ hintPenalty: hintPenalty,
     "</div>";
 
 
-  // Student thinking
   message +=
     "<div class='reveal-section student-thinking'>";
 
@@ -564,7 +579,6 @@ hintPenalty: hintPenalty,
     "</div>";
 
 
-  // Why this region
   message +=
     "<div class='reveal-section'>";
 
@@ -580,74 +594,79 @@ hintPenalty: hintPenalty,
     "</div>";
 
 
-  // Score
-message +=
-  "<div class='reveal-section score-summary'>";
-
-if (currentLocation.bonus === true) {
   message +=
-    "<h3>⭐ Bonus Score: " +
-    roundScore +
-    " / " +
-    maxRoundScore +
-    "</h3>";
+    "<div class='reveal-section score-summary'>";
 
-  message +=
-    "<p>Region: " +
-    regionPoints +
-    " / 200 &nbsp; | &nbsp; Map: " +
-    mapPoints +
-    " / 100</p>";
-} else {
-  message +=
-    "<h3>Round Score: " +
-    roundScore +
-    " / " +
-    maxRoundScore +
-    "</h3>";
 
-  message +=
-    "<p>Region: " +
-    regionPoints +
-    " / 400 &nbsp; | &nbsp; Map: " +
-    mapPoints +
-    " / 200</p>";
-}
+  if (currentLocation.bonus === true) {
 
-message +=
-  "<p>You were <strong>" +
-  Math.round(distance) +
-  " miles away</strong>.</p>";
+    message +=
+      "<h3>⭐ Bonus Score: " +
+      roundScore +
+      " / 300</h3>";
 
-if (hintUsed === true) {
-  message +=
-    "<p>Hint used: <strong>-100 points</strong></p>";
-}
+    message +=
+      "<p>Region: " +
+      regionPoints +
+      " / 200 &nbsp; | &nbsp; Map: " +
+      mapPoints +
+      " / 100</p>";
 
-if (currentLocation.bonus === true) {
-  message +=
-    "<p>Main Score: <strong>" +
-    totalScore +
-    "</strong></p>";
+  } else {
+
+    message +=
+      "<h3>Round Score: " +
+      roundScore +
+      " / 600</h3>";
+
+    message +=
+      "<p>Region: " +
+      regionPoints +
+      " / 400 &nbsp; | &nbsp; Map: " +
+      mapPoints +
+      " / 200</p>";
+  }
+
 
   message +=
-    "<p>Bonus Points: <strong>+" +
-    bonusScore +
-    "</strong></p>";
-} else {
-  message +=
-    "<p>Running Score: <strong>" +
-    totalScore +
-    "</strong></p>";
-}
+    "<p>You were <strong>" +
+    Math.round(distance) +
+    " miles away</strong>.</p>";
 
-message +=
-  "</div>";
+
+  if (hintUsed === true) {
+
+    message +=
+      "<p>💡 Hint used: <strong>-100 points</strong></p>";
+  }
+
+
+  if (currentLocation.bonus === true) {
+
+    message +=
+      "<p>Main Score: <strong>" +
+      totalScore +
+      "</strong></p>";
+
+    message +=
+      "<p>Bonus Points: <strong>+" +
+      bonusScore +
+      "</strong></p>";
+
+  } else {
+
+    message +=
+      "<p>Running Score: <strong>" +
+      totalScore +
+      "</strong></p>";
+  }
+
+  message +=
+    "</div>";
 
 
   feedback.innerHTML =
     message;
-
 
   document.getElementById("submit-button").style.display =
     "none";
@@ -680,13 +699,16 @@ function nextRound() {
 
 
 // --------------------------------------------------
-// RESET BETWEEN ROUNDS
+// RESET ROUND
 // --------------------------------------------------
 
 function resetRound() {
   selectedAnswer = "";
   selectedClues = [];
   guessedLocation = null;
+
+  hintUsed = false;
+  hintPenalty = 0;
 
   document.getElementById("feedback").innerHTML =
     "";
@@ -697,6 +719,24 @@ function resetRound() {
   document.getElementById("reasoning-box").value =
     "";
 
+  document.getElementById("hint-text").innerHTML =
+    "";
+
+  if (gameMode === "explore") {
+
+    document.getElementById("hint-section").style.display =
+      "block";
+
+    document.getElementById("hint-button").style.display =
+      "inline-block";
+
+  } else {
+
+    document.getElementById("hint-section").style.display =
+      "none";
+  }
+
+
   const answerButtons =
     document.querySelectorAll(".answers button");
 
@@ -704,12 +744,14 @@ function resetRound() {
     btn.classList.remove("selected");
   });
 
+
   const clueButtons =
     document.querySelectorAll(".clue-buttons button");
 
   clueButtons.forEach(function(btn) {
     btn.classList.remove("clue-selected");
   });
+
 
   if (guessMarker) {
     guessMarker.setMap(null);
@@ -726,6 +768,7 @@ function resetRound() {
     guessLine = null;
   }
 
+
   document.getElementById("explore-stage").style.display =
     "block";
 
@@ -740,14 +783,6 @@ function resetRound() {
 
   document.getElementById("next-button").style.display =
     "none";
-
-  hintUsed = false;
-hintPenalty = 0;
-
-document.getElementById("hint-text").innerHTML = "";
-
-document.getElementById("hint-button").style.display =
-  gameMode === "explore" ? "inline-block" : "none";
 }
 
 
@@ -760,6 +795,9 @@ function endGame() {
     "Explorer Complete!";
 
   document.getElementById("street-view").style.display =
+    "none";
+
+  document.getElementById("hint-section").style.display =
     "none";
 
   document.getElementById("explore-stage").style.display =
@@ -788,10 +826,6 @@ function endGame() {
     studentName +
     "!</h2>" +
 
-    "<p>You explored " +
-    regularLocations.length +
-    " Colorado locations.</p>" +
-
     "<h2>Final Score</h2>" +
 
     "<p><strong>" +
@@ -802,6 +836,7 @@ function endGame() {
 
 
   if (bonusScore > 0) {
+
     finalMessage +=
       "<h3>⭐ Bonus Points: +" +
       bonusScore +
